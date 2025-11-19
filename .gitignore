@@ -1,0 +1,28 @@
+# Ambiente virtual
+venv/
+.venv/
+
+# Cache do Python
+__pycache__/
+*.pyc
+
+# Arquivos temporários
+*.log
+
+# Config automática do Streamlit
+.streamlit/
+
+# VS Code
+.vscode/
+
+# Diretórios do Python
+build/
+dist/
+*.egg-info/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Windows
+Thumbs.db
+desktop.ini
