@@ -125,20 +125,14 @@ elif pagina == "Consultas":
         ORDER BY p.Codigo_Referencia
         """,
 
-        "5) Alunos PIBIC que estão cursando":
+        "5) Alunos com situação 'Cursando'":
         """
         SELECT DISTINCT
           a.Nome AS "Nome do Aluno", 
-          c.Nome_Curso AS "Curso do Aluno", 
-          of.Nome_Fomento AS "Fomento do Aluno", 
-          a.Situacao_Vinculo AS "Situação"
+          a.Situacao_Vinculo AS "Situação Acadêmica"
         FROM Aluno a
-        JOIN Curso c ON a.ID_Curso = c.ID_Curso
         JOIN Participa pa ON a.ID_Aluno = pa.ID_Aluno
-        JOIN Orgao_Fomento of ON pa.ID_Fomento = of.ID_Fomento
-        WHERE of.Nome_Fomento LIKE '%PIBIC%' 
-          AND a.Situacao_Vinculo = 'Cursando'
-        ORDER BY of.Nome_Fomento
+        WHERE a.Situacao_Vinculo = 'Cursando'
         """,
 
         "6) Alunos orientados por docentes com mestrado":
@@ -170,7 +164,7 @@ elif pagina == "Consultas":
         WHERE a.Campus = 'Uberaba'
         """,
 
-        "8) Alunos SISU por curso":
+        "8) Alunos SISU com fomento CNPq":
         """
         SELECT
           c.Nome_Curso AS "Curso do Aluno", 
