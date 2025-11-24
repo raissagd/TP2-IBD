@@ -39,7 +39,7 @@ if pagina == "Visão Geral":
     st.title("Visão Geral do Banco de Dados")
 
     st.write("Resumo das entidades principais:")
-    st.write(executar_query("PRAGMA table_info(alunos_ic_enriquecido_limpo);"))
+    st.write(executar_query("PRAGMA table_info(alunos_ic_enriquecido);"))
 
 
     try:
