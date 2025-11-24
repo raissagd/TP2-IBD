@@ -43,7 +43,7 @@ if pagina == "Visão Geral":
 
 
     try:
-        num_alunos = executar_query("SELECT COUNT(*) AS total FROM alunos_ic_enriquecido_limpo")["total"][0]
+        num_alunos = executar_query("SELECT COUNT(*) AS total FROM alunos_ic_enriquecido")["total"][0]
         num_cursos = executar_query("SELECT COUNT(*) AS total FROM lista_cursos_graduacao")["total"][0]
         num_docentes = executar_query("SELECT COUNT(*) AS total FROM lista_docentes")["total"][0]
         num_registros_originais = executar_query("SELECT COUNT(*) AS total FROM alunos_ic")["total"][0]
@@ -89,7 +89,7 @@ elif pagina == "Consultas":
             "Nome do Aluno", 
             "Título do Projeto", 
             "Fomento do Aluno"
-        FROM alunos_ic_enriquecido_limpo
+        FROM alunos_ic_enriquecido
         WHERE "Fomento do Aluno" IS NOT NULL 
             AND "Fomento do Aluno" NOT LIKE '%VOLUNT%'
 
@@ -101,7 +101,7 @@ elif pagina == "Consultas":
         SELECT 
             "Título do Projeto",
             "Data de Fim do Projeto"
-        FROM alunos_ic_enriquecido_limpo
+        FROM alunos_ic_enriquecido
         WHERE "Data de Fim do Projeto" LIKE '%2024';
 
 
@@ -112,7 +112,7 @@ elif pagina == "Consultas":
         SELECT 
             "Nome do Aluno",
             "Curso do Aluno"
-        FROM alunos_ic_enriquecido_limpo
+        FROM alunos_ic_enriquecido
         LIMIT 20;
 
         """,
@@ -122,7 +122,7 @@ elif pagina == "Consultas":
         SELECT 
             "Título do Projeto",
             "Orientador"
-        FROM alunos_ic_enriquecido_limpo
+        FROM alunos_ic_enriquecido
         LIMIT 20;
 
 
@@ -133,7 +133,7 @@ elif pagina == "Consultas":
         SELECT 
             "Nome do Aluno",
             aluno_situacao_vinculo
-        FROM alunos_ic_enriquecido_limpo
+        FROM alunos_ic_enriquecido
         LIMIT 20;
 
         """,
@@ -144,7 +144,7 @@ elif pagina == "Consultas":
             "Nome do Aluno",
             "Curso do Aluno",
             "Título do Projeto"
-        FROM alunos_ic_enriquecido_limpo
+        FROM alunos_ic_enriquecido
         LIMIT 20;
 
 
@@ -156,7 +156,7 @@ elif pagina == "Consultas":
             "Título do Projeto",
             "Orientador",
             orientador_lotacao
-        FROM alunos_ic_enriquecido_limpo
+        FROM alunos_ic_enriquecido
         LIMIT 20;
 
 
@@ -169,7 +169,7 @@ elif pagina == "Consultas":
             "Curso do Aluno",
             aluno_ano_ingresso,
             aluno_situacao_vinculo
-        FROM alunos_ic_enriquecido_limpo
+        FROM alunos_ic_enriquecido
         LIMIT 20;
 
 
@@ -180,7 +180,7 @@ elif pagina == "Consultas":
         SELECT 
             "Curso do Aluno" AS curso,
             COUNT(*) AS total
-        FROM alunos_ic_enriquecido_limpo
+        FROM alunos_ic_enriquecido
         GROUP BY "Curso do Aluno"
         ORDER BY total DESC;
 
@@ -192,7 +192,7 @@ elif pagina == "Consultas":
         SELECT 
             "Orientador",
             COUNT(DISTINCT "Título do Projeto") AS total_projetos
-        FROM alunos_ic_enriquecido_limpo
+        FROM alunos_ic_enriquecido
         GROUP BY "Orientador"
         ORDER BY total_projetos DESC;
 
@@ -231,7 +231,7 @@ elif pagina == "Análises Interativas":
 
     cursos = executar_query("""
         SELECT DISTINCT "Curso do Aluno"
-        FROM alunos_ic_enriquecido_limpo
+        FROM alunos_ic_enriquecido
         ORDER BY "Curso do Aluno"
     """)["Curso do Aluno"].tolist()
 
@@ -243,7 +243,7 @@ elif pagina == "Análises Interativas":
         "Título do Projeto",
         "Orientador",
         "Fomento do Aluno"
-    FROM alunos_ic_enriquecido_limpo
+    FROM alunos_ic_enriquecido
     WHERE "Curso do Aluno" = "{curso_escolhido}"
     """
 
@@ -259,7 +259,7 @@ elif pagina == "Análises Interativas":
 elif pagina == "Dashboards":
     st.title("📊 Dashboards – Análises Visuais")
 
-    df = executar_query("SELECT * FROM alunos_ic_enriquecido_limpo")
+    df = executar_query("SELECT * FROM alunos_ic_enriquecido")
 
     import altair as alt
     
