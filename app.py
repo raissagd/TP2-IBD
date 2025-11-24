@@ -39,24 +39,24 @@ if pagina == "Visão Geral":
     st.title("Visão Geral do Banco de Dados")
 
     st.write("Resumo das entidades principais:")
-    st.write(executar_query("PRAGMA table_info(alunos_ic_enriquecido);"))
+    st.write(executar_query("PRAGMA table_info(Aluno);"))
 
 
     try:
-        num_alunos = executar_query("SELECT COUNT(*) AS total FROM alunos_ic_enriquecido")["total"][0]
-        num_cursos = executar_query("SELECT COUNT(*) AS total FROM lista_cursos_graduacao")["total"][0]
-        num_docentes = executar_query("SELECT COUNT(*) AS total FROM lista_docentes")["total"][0]
-        num_registros_originais = executar_query("SELECT COUNT(*) AS total FROM alunos_ic")["total"][0]
+        num_alunos = executar_query("SELECT COUNT(*) AS total FROM Aluno")["total"][0]
+        num_cursos = executar_query("SELECT COUNT(*) AS total FROM Curso")["total"][0]
+        num_docentes = executar_query("SELECT COUNT(*) AS total FROM Orientador")["total"][0]
+        num_projetos = executar_query("SELECT COUNT(*) AS total FROM Projeto")["total"][0]
 
     except Exception as e:
         st.error(f"Erro ao consultar banco: {e}")
-        num_alunos = num_cursos = num_docentes = num_registros_originais = 0
+        num_alunos = num_cursos = num_docentes = num_projetos = 0
 
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Registros Completos", num_alunos)
+    col1.metric("Alunos", num_alunos)
     col2.metric("Cursos", num_cursos)
-    col3.metric("Docentes", num_docentes)
-    col4.metric("Registros Originais", num_registros_originais)
+    col3.metric("Orientadores", num_docentes)
+    col4.metric("Projetos", num_projetos)
 
     st.divider()
 
@@ -86,116 +86,114 @@ elif pagina == "Consultas":
         "1) Listar alunos bolsistas":
         """
         SELECT 
-            "Nome do Aluno", 
-            "Título do Projeto", 
-            "Fomento do Aluno"
-        FROM alunos_ic_enriquecido
-        WHERE "Fomento do Aluno" IS NOT NULL 
-            AND "Fomento do Aluno" NOT LIKE '%VOLUNT%'
-
-
+            a.Nome as Aluno, 
+            p.Nome_Projeto as Projeto, 
+            of.Nome_Fomento as Fomento
+        FROM Participa pa
+        JOIN Aluno a ON pa.ID_Aluno = a.ID_Aluno
+        JOIN Projeto p ON pa.ID_Projeto = p.ID_Projeto
+        JOIN Orgao_Fomento of ON pa.ID_Fomento = of.ID_Fomento
+        WHERE pa.ID_Fomento IS NOT NULL
+        LIMIT 50;
         """,
 
         "2) Projetos que terminam em 2024":
         """
         SELECT 
-            "Título do Projeto",
-            "Data de Fim do Projeto"
-        FROM alunos_ic_enriquecido
-        WHERE "Data de Fim do Projeto" LIKE '%2024';
-
-
+            p.Nome_Projeto as Projeto,
+            pa.Data_Termino_Vigencia as Data_Fim
+        FROM Projeto p
+        JOIN Participa pa ON p.ID_Projeto = pa.ID_Projeto
+        WHERE pa.Data_Termino_Vigencia LIKE '%2024'
+        GROUP BY p.Nome_Projeto, pa.Data_Termino_Vigencia
+        LIMIT 50;
         """,
 
         "3) Alunos e seus cursos":
         """
         SELECT 
-            "Nome do Aluno",
-            "Curso do Aluno"
-        FROM alunos_ic_enriquecido
+            a.Nome as Aluno,
+            c.Nome_Curso as Curso
+        FROM Aluno a
+        JOIN Curso c ON a.ID_Curso = c.ID_Curso
         LIMIT 20;
-
         """,
 
         "4) Projetos e orientadores":
         """
         SELECT 
-            "Título do Projeto",
-            "Orientador"
-        FROM alunos_ic_enriquecido
+            p.Nome_Projeto as Projeto,
+            o.Nome as Orientador
+        FROM Projeto p
+        JOIN Orientador o ON p.ID_Orientador = o.ID_Orientador
         LIMIT 20;
-
-
         """,
 
-        "5) Alunos do IC e sua situação no banco institucional":
+        "5) Alunos e sua situação de vínculo":
         """
         SELECT 
-            "Nome do Aluno",
-            aluno_situacao_vinculo
-        FROM alunos_ic_enriquecido
+            a.Nome as Aluno,
+            a.Situacao_Vinculo
+        FROM Aluno a
         LIMIT 20;
-
         """,
 
         "6) Aluno + Curso + Projeto":
         """
         SELECT 
-            "Nome do Aluno",
-            "Curso do Aluno",
-            "Título do Projeto"
-        FROM alunos_ic_enriquecido
+            a.Nome as Aluno,
+            c.Nome_Curso as Curso,
+            p.Nome_Projeto as Projeto
+        FROM Participa pa
+        JOIN Aluno a ON pa.ID_Aluno = a.ID_Aluno
+        JOIN Curso c ON a.ID_Curso = c.ID_Curso
+        JOIN Projeto p ON pa.ID_Projeto = p.ID_Projeto
         LIMIT 20;
-
-
         """,
 
-        "7) Projeto + Orientador + Departamento":
+        "7) Projeto + Orientador + Lotação":
         """
         SELECT 
-            "Título do Projeto",
-            "Orientador",
-            orientador_lotacao
-        FROM alunos_ic_enriquecido
+            p.Nome_Projeto as Projeto,
+            o.Nome as Orientador,
+            o.Lotacao
+        FROM Projeto p
+        JOIN Orientador o ON p.ID_Orientador = o.ID_Orientador
         LIMIT 20;
-
-
         """,
 
         "8) Aluno + Curso + Dados institucionais":
         """
         SELECT 
-            "Nome do Aluno",
-            "Curso do Aluno",
-            aluno_ano_ingresso,
-            aluno_situacao_vinculo
-        FROM alunos_ic_enriquecido
+            a.Nome as Aluno,
+            c.Nome_Curso as Curso,
+            a.Ano_Ingresso,
+            a.Situacao_Vinculo
+        FROM Aluno a
+        JOIN Curso c ON a.ID_Curso = c.ID_Curso
         LIMIT 20;
-
-
         """,
 
         "9) Quantidade de alunos por curso":
         """
         SELECT 
-            "Curso do Aluno" AS curso,
+            c.Nome_Curso as Curso,
             COUNT(*) AS total
-        FROM alunos_ic_enriquecido
-        GROUP BY "Curso do Aluno"
+        FROM Aluno a
+        JOIN Curso c ON a.ID_Curso = c.ID_Curso
+        GROUP BY c.Nome_Curso
         ORDER BY total DESC;
-
-
         """,
 
         "10) Quantidade de projetos por orientador":
         """
         SELECT 
-            "Orientador",
-            COUNT(DISTINCT "Título do Projeto") AS total_projetos
-        FROM alunos_ic_enriquecido
-        GROUP BY "Orientador"
+            o.Nome as Orientador,
+            COUNT(DISTINCT p.ID_Projeto) AS total_projetos
+        FROM Orientador o
+        JOIN Projeto p ON o.ID_Orientador = p.ID_Orientador
+        GROUP BY o.Nome
         ORDER BY total_projetos DESC;
-
         """
 
     }
@@ -230,21 +228,26 @@ elif pagina == "Análises Interativas":
     st.write("Selecione um curso para ver alunos e projetos:")
 
     cursos = executar_query("""
-        SELECT DISTINCT "Curso do Aluno"
-        FROM alunos_ic_enriquecido
-        ORDER BY "Curso do Aluno"
-    """)["Curso do Aluno"].tolist()
+        SELECT DISTINCT Nome_Curso
+        FROM Curso
+        ORDER BY Nome_Curso
+    """)["Nome_Curso"].tolist()
 
     curso_escolhido = st.selectbox("Curso:", cursos)
 
     sql = f"""
     SELECT 
-        "Nome do Aluno",
-        "Título do Projeto",
-        "Orientador",
-        "Fomento do Aluno"
-    FROM alunos_ic_enriquecido
-    WHERE "Curso do Aluno" = "{curso_escolhido}"
+        a.Nome as Aluno,
+        p.Nome_Projeto as Projeto,
+        o.Nome as Orientador,
+        of.Nome_Fomento as Fomento
+    FROM Aluno a
+    JOIN Curso c ON a.ID_Curso = c.ID_Curso
+    JOIN Participa pa ON a.ID_Aluno = pa.ID_Aluno
+    JOIN Projeto p ON pa.ID_Projeto = p.ID_Projeto
+    JOIN Orientador o ON p.ID_Orientador = o.ID_Orientador
+    LEFT JOIN Orgao_Fomento of ON pa.ID_Fomento = of.ID_Fomento
+    WHERE c.Nome_Curso = "{curso_escolhido}"
     """
 
     df = executar_query(sql)
@@ -259,13 +262,30 @@ elif pagina == "Análises Interativas":
 elif pagina == "Dashboards":
     st.title("📊 Dashboards – Análises Visuais")
 
-    df = executar_query("SELECT * FROM alunos_ic_enriquecido")
+    # Query completa para dashboards
+    df = executar_query("""
+    SELECT 
+        a.Nome,
+        c.Nome_Curso,
+        a.Campus,
+        c.Modalidade,
+        p.Nome_Projeto,
+        o.Nome as Orientador,
+        pa.Data_Termino_Vigencia,
+        of.Nome_Fomento
+    FROM Participa pa
+    JOIN Aluno a ON pa.ID_Aluno = a.ID_Aluno
+    JOIN Curso c ON a.ID_Curso = c.ID_Curso
+    JOIN Projeto p ON pa.ID_Projeto = p.ID_Projeto
+    JOIN Orientador o ON p.ID_Orientador = o.ID_Orientador
+    LEFT JOIN Orgao_Fomento of ON pa.ID_Fomento = of.ID_Fomento
+    """)
 
     import altair as alt
     
     st.subheader("🎓 Top 10 cursos com mais alunos em IC")
     top_cursos = (
-        df.groupby("Curso do Aluno")
+        df.groupby("Nome_Curso")
         .size()
         .reset_index(name="Total")
         .sort_values("Total", ascending=False)
@@ -274,8 +294,8 @@ elif pagina == "Dashboards":
 
     chart_cursos = alt.Chart(top_cursos).mark_bar().encode(
         x=alt.X("Total:Q", title="Número de alunos"),
-        y=alt.Y("Curso do Aluno:N", sort="-x", title="Curso"),
-        tooltip=["Curso do Aluno", "Total"]
+        y=alt.Y("Nome_Curso:N", sort="-x", title="Curso"),
+        tooltip=["Nome_Curso", "Total"]
     )
 
     st.altair_chart(chart_cursos, use_container_width=True)
@@ -286,9 +306,9 @@ elif pagina == "Dashboards":
     # ------------------------------------------------------
     st.subheader("💰 Distribuição dos tipos de fomento")
     fomento_counts = (
-        df["Fomento do Aluno"]
-        .fillna("VOLUNTÁRIO")
-        .replace("", "VOLUNTÁRIO")
+        df["Nome_Fomento"]
+        .fillna("Sem bolsa")
+        .replace("", "Sem bolsa")
         .value_counts()
         .reset_index()
     )
@@ -309,7 +329,7 @@ elif pagina == "Dashboards":
     st.subheader("👨‍🏫 Orientadores com mais projetos")
 
     orient = (
-        df.groupby("Orientador")["Título do Projeto"]
+        df.groupby("Orientador")["Nome_Projeto"]
         .nunique()
         .reset_index(name="Projetos")
         .sort_values("Projetos", ascending=False)
@@ -329,7 +349,7 @@ elif pagina == "Dashboards":
 
     # ------------------------------------------------------
     st.subheader("📅 Projetos por ano (linha do tempo)")
-    df["Ano Fim"] = df["Data de Fim do Projeto"].str[-4:].astype(int)
+    df["Ano Fim"] = df["Data_Termino_Vigencia"].str[-4:].astype(int)
 
     timeline = (
         df.groupby("Ano Fim")
@@ -350,9 +370,9 @@ elif pagina == "Dashboards":
 
 
     # ------------------------------------------------------
-    st.subheader("🏫 Distribuição por campus (aluno_campus)")
+    st.subheader("🏫 Distribuição por campus")
     campus_counts = (
-        df["aluno_campus"]
+        df["Campus"]
         .value_counts()
         .reset_index()
     )
@@ -373,7 +393,7 @@ elif pagina == "Dashboards":
     st.subheader("📘 Modalidade de Curso (Bacharelado, Licenciatura…)")
 
     modalidade = (
-        df["curso_modalidade"]
+        df["Modalidade"]
         .value_counts()
         .reset_index()
     )
