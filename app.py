@@ -166,15 +166,15 @@ elif pagina == "Consultas":
 
         "8) Alunos SISU com fomento CNPq":
         """
-        SELECT
-          c.Nome_Curso AS "Curso do Aluno", 
-          c.Grau AS "Grau do Curso", 
-          COUNT(DISTINCT a.ID_Aluno) AS "Número de Alunos"
+        SELECT DISTINCT
+          a.Nome AS "Nome do Aluno",
+          a.Forma_Ingresso AS "Forma de Ingresso",
+          of.Nome_Fomento AS "Fomento"
         FROM Aluno a
-        JOIN Curso c ON a.ID_Curso = c.ID_Curso
+        JOIN Participa pa ON a.ID_Aluno = pa.ID_Aluno
+        JOIN Orgao_Fomento of ON pa.ID_Fomento = of.ID_Fomento
         WHERE a.Forma_Ingresso LIKE '%SISU%'
-        GROUP BY c.Nome_Curso, c.Grau
-        ORDER BY COUNT(DISTINCT a.ID_Aluno) ASC
+          AND of.Nome_Fomento LIKE '%CNPq%'
         """,
 
         "9) Alunos por município":
