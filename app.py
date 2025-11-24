@@ -83,117 +83,126 @@ elif pagina == "Consultas":
     st.title("Consultas SQL")
 
     consultas = {
-        "1) Listar alunos bolsistas":
+        "1) Alunos do campus Iturama":
         """
-        SELECT 
-            a.Nome as Aluno, 
-            p.Nome_Projeto as Projeto, 
-            of.Nome_Fomento as Fomento
-        FROM Participa pa
-        JOIN Aluno a ON pa.ID_Aluno = a.ID_Aluno
-        JOIN Projeto p ON pa.ID_Projeto = p.ID_Projeto
+        SELECT DISTINCT
+          Nome AS "Nome do Aluno", 
+          Campus
+        FROM Aluno
+        WHERE Campus = 'Iturama'
+        """,
+
+        "2) Alunos que ingressaram a partir de 2020":
+        """
+        SELECT DISTINCT
+          Nome AS "Nome do Aluno", 
+          Ano_Ingresso AS "Ano de Ingresso"
+        FROM Aluno
+        WHERE Ano_Ingresso >= 2020
+        """,
+
+        "3) Cursos de bacharelado noturno":
+        """
+        SELECT DISTINCT
+          a.Nome AS "Nome do Aluno", 
+          c.Nome_Curso AS "Curso do Aluno", 
+          c.Grau AS "Grau do Curso", 
+          c.Turno AS "Turno"
+        FROM Aluno a
+        JOIN Curso c ON a.ID_Curso = c.ID_Curso
+        WHERE c.Grau LIKE '%Bacharelado%' 
+          AND c.Turno LIKE '%noturno%'
+        """,
+
+        "4) Projetos e seus orientadores":
+        """
+        SELECT DISTINCT
+          p.Nome_Projeto AS "Título do Projeto", 
+          p.Codigo_Referencia AS "Código", 
+          o.Nome AS "Orientador"
+        FROM Projeto p
+        JOIN Orientador o ON p.ID_Orientador = o.ID_Orientador
+        ORDER BY p.Codigo_Referencia
+        """,
+
+        "5) Alunos PIBIC que estão cursando":
+        """
+        SELECT DISTINCT
+          a.Nome AS "Nome do Aluno", 
+          c.Nome_Curso AS "Curso do Aluno", 
+          of.Nome_Fomento AS "Fomento do Aluno", 
+          a.Situacao_Vinculo AS "Situação"
+        FROM Aluno a
+        JOIN Curso c ON a.ID_Curso = c.ID_Curso
+        JOIN Participa pa ON a.ID_Aluno = pa.ID_Aluno
         JOIN Orgao_Fomento of ON pa.ID_Fomento = of.ID_Fomento
-        WHERE pa.ID_Fomento IS NOT NULL
-        LIMIT 50;
+        WHERE of.Nome_Fomento LIKE '%PIBIC%' 
+          AND a.Situacao_Vinculo = 'Cursando'
+        ORDER BY of.Nome_Fomento
         """,
 
-        "2) Projetos que terminam em 2024":
+        "6) Alunos orientados por docentes com mestrado":
         """
-        SELECT 
-            p.Nome_Projeto as Projeto,
-            pa.Data_Termino_Vigencia as Data_Fim
-        FROM Projeto p
-        JOIN Participa pa ON p.ID_Projeto = pa.ID_Projeto
-        WHERE pa.Data_Termino_Vigencia LIKE '%2024'
-        GROUP BY p.Nome_Projeto, pa.Data_Termino_Vigencia
-        LIMIT 50;
-        """,
-
-        "3) Alunos e seus cursos":
-        """
-        SELECT 
-            a.Nome as Aluno,
-            c.Nome_Curso as Curso
+        SELECT DISTINCT
+          a.Nome AS "Nome do Aluno", 
+          c.Turno AS "Turno do aluno", 
+          o.Nome AS "Nome do Docente", 
+          o.Titulacao AS "Titulação"
         FROM Aluno a
         JOIN Curso c ON a.ID_Curso = c.ID_Curso
-        LIMIT 20;
-        """,
-
-        "4) Projetos e orientadores":
-        """
-        SELECT 
-            p.Nome_Projeto as Projeto,
-            o.Nome as Orientador
-        FROM Projeto p
-        JOIN Orientador o ON p.ID_Orientador = o.ID_Orientador
-        LIMIT 20;
-        """,
-
-        "5) Alunos e sua situação de vínculo":
-        """
-        SELECT 
-            a.Nome as Aluno,
-            a.Situacao_Vinculo
-        FROM Aluno a
-        LIMIT 20;
-        """,
-
-        "6) Aluno + Curso + Projeto":
-        """
-        SELECT 
-            a.Nome as Aluno,
-            c.Nome_Curso as Curso,
-            p.Nome_Projeto as Projeto
-        FROM Participa pa
-        JOIN Aluno a ON pa.ID_Aluno = a.ID_Aluno
-        JOIN Curso c ON a.ID_Curso = c.ID_Curso
+        JOIN Participa pa ON a.ID_Aluno = pa.ID_Aluno
         JOIN Projeto p ON pa.ID_Projeto = p.ID_Projeto
-        LIMIT 20;
-        """,
-
-        "7) Projeto + Orientador + Lotação":
-        """
-        SELECT 
-            p.Nome_Projeto as Projeto,
-            o.Nome as Orientador,
-            o.Lotacao
-        FROM Projeto p
         JOIN Orientador o ON p.ID_Orientador = o.ID_Orientador
-        LIMIT 20;
+        WHERE o.Titulacao LIKE '%MESTRADO%'
         """,
 
-        "8) Aluno + Curso + Dados institucionais":
+        "7) Alunos do campus Uberaba com seus projetos":
         """
-        SELECT 
-            a.Nome as Aluno,
-            c.Nome_Curso as Curso,
-            a.Ano_Ingresso,
-            a.Situacao_Vinculo
+        SELECT DISTINCT
+          a.Nome AS "Nome do Aluno", 
+          c.Nome_Curso AS "Curso do Aluno", 
+          c.Municipio AS "Município", 
+          p.Nome_Projeto AS "Título do Projeto"
         FROM Aluno a
         JOIN Curso c ON a.ID_Curso = c.ID_Curso
-        LIMIT 20;
+        JOIN Participa pa ON a.ID_Aluno = pa.ID_Aluno
+        JOIN Projeto p ON pa.ID_Projeto = p.ID_Projeto
+        WHERE a.Campus = 'Uberaba'
         """,
 
-        "9) Quantidade de alunos por curso":
+        "8) Alunos SISU por curso":
         """
-        SELECT 
-            c.Nome_Curso as Curso,
-            COUNT(*) AS total
+        SELECT
+          c.Nome_Curso AS "Curso do Aluno", 
+          c.Grau AS "Grau do Curso", 
+          COUNT(DISTINCT a.ID_Aluno) AS "Número de Alunos"
         FROM Aluno a
         JOIN Curso c ON a.ID_Curso = c.ID_Curso
-        GROUP BY c.Nome_Curso
-        ORDER BY total DESC;
+        WHERE a.Forma_Ingresso LIKE '%SISU%'
+        GROUP BY c.Nome_Curso, c.Grau
+        ORDER BY COUNT(DISTINCT a.ID_Aluno) ASC
         """,
 
-        "10) Quantidade de projetos por orientador":
+        "9) Alunos por município":
         """
-        SELECT 
-            o.Nome as Orientador,
-            COUNT(DISTINCT p.ID_Projeto) AS total_projetos
+        SELECT
+          c.Municipio AS "Município", 
+          COUNT(DISTINCT a.ID_Aluno) AS "Número de alunos"
+        FROM Aluno a
+        JOIN Curso c ON a.ID_Curso = c.ID_Curso
+        GROUP BY c.Municipio
+        ORDER BY COUNT(DISTINCT a.ID_Aluno) ASC
+        """,
+
+        "10) Orientadores por titulação":
+        """
+        SELECT
+          o.Titulacao AS "Titulação", 
+          COUNT(DISTINCT o.ID_Orientador) AS "Número de Docentes"
         FROM Orientador o
         JOIN Projeto p ON o.ID_Orientador = p.ID_Orientador
-        GROUP BY o.Nome
-        ORDER BY total_projetos DESC;
+        GROUP BY o.Titulacao
+        ORDER BY COUNT(DISTINCT o.ID_Orientador) ASC
         """
 
     }
